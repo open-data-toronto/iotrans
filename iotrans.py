@@ -6,17 +6,16 @@ import xmltodict
 import pandas as pd
 import geopandas as gpd
 
-
-GEOSPATIAL_FORMATS = ['csv', 'dxf', 'geojson', 'shp']
+GEOSPATIAL_FORMATS = ['csv', 'geojson', 'gpkg', 'shp']
 TABULAR_FORMATS = ['csv', 'json', 'xml']
 
 FILE_PREFIX = 'iotrans_'
 
-
 def prune():
-    for folder in os.listdir(tempfile.gettempdir()):
+    main = tempfile.gettempdir()
+    for folder in os.listdir(main):
         if folder.startswith(FILE_PREFIX):
-            shutil.rmtree(folder)
+            shutil.rmtree(os.path.join(main, folder))
 
 def to_file(data, fmt_out, filename='data', zip_content=True, remap_shp_fields=True):
     assert fmt_out in GEOSPATIAL_FORMATS or fmt_out in TABULAR_FORMATS, 'Invalid output formats'
@@ -37,8 +36,8 @@ def to_file(data, fmt_out, filename='data', zip_content=True, remap_shp_fields=T
             f.write(content)
     elif fmt_out == 'geojson':
         data.to_file(path, driver='GeoJSON', encoding='utf-8')
-    elif fmt_out == 'dxf':
-        data.to_file(path, driver='DXF')
+    elif fmt_out == 'gpkg':
+        data.to_file(path, driver='GPKG')
     elif fmt_out == 'shp':
         if remap_shp_fields and any([len(x) > 10 for x in df.columns]):
             fields = pd.DataFrame([['FIELD_{0}'.format(i+1) if x != 'geometry' else x, x] for i, x in enumerate(df.columns)], columns=['field', 'name'])
