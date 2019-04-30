@@ -1,4 +1,5 @@
 import os
+import shutil
 import tempfile
 
 import xmltodict
@@ -31,7 +32,11 @@ def to_file(data, fmt_out, filename='data', zip_content=True, remap_shp_fields=T
     elif fmt_out == 'json':
         data.to_json(path, orient='records')
     elif fmt_out == 'xml':
-        content = xmltodict.unparse(data.to_dict('records'), pretty=True)
+        content = xmltodict.unparse({
+            'DATA': {
+                'ROW_{0}'.format(idx): row for idx, row in enumerate(df.to_dict('records'))
+            }
+        }, pretty=True)
         with open(path, 'w') as f:
             f.write(content)
     elif fmt_out == 'geojson':
@@ -48,7 +53,7 @@ def to_file(data, fmt_out, filename='data', zip_content=True, remap_shp_fields=T
         df.to_file(path, driver='ESRI Shapefile')
 
     if zip_content:
-        zipped = tempfile.mkdtemp()
+        zipped = tempfile.mkdtemp(prefix=FILE_PREFIX)
         path = shutil.make_archive(os.path.join(zipped, filename), 'zip', root_dir=source, base_dir='.')
 
     return path
