@@ -52,6 +52,4 @@ def to_file(data, fmt_out, filename='data', zip_content=True, remap_shp_fields=T
         zipped = tempfile.mkdtemp()
         path = shutil.make_archive(os.path.join(zipped, filename), 'zip', root_dir=source, base_dir='.')
 
-    prune()
-
     return path
