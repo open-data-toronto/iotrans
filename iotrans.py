@@ -1,3 +1,5 @@
+from zipfile import ZipFile
+
 import os
 
 import pandas as pd
@@ -27,13 +29,13 @@ def to_file(data, path, zip_content=True, remap_shp_fields=True):
     (str): Path to the converted file
     '''
 
+    filename, fmt = os.path.basename(path).split('.')
+    path = os.path.dirname(path)
+
     assert fmt in supported_formats, 'Invalid output formats'
     assert (fmt in _TAB_FMT and isinstance(data, (pd.DataFrame, gpd.GeoDataFrame))) or \
             (fmt in _GEO_FMT and isinstance(data, gpd.GeoDataFrame)), \
             'Invalid data structure'
-
-    path = os.path.dirname(path)
-    filename, fmt = os.path.basename(path).split('.')
 
     # Create directory if the output format will generate multiple files (eg. Shapefile)
     if fmt in _MULTI_FILE:
