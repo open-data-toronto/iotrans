@@ -18,7 +18,7 @@ _MULTI_FILE = ['shp']
 
 supported_formats = set(_GEO_FMT + _TAB_FMT)
 
-def to_file(data, path, zip_content=False, remap_shp_fields=True):
+def to_file(data, path, exclude=[], remap_shp_fields=True, zip_content=False,):
     '''
     Converts pandas DataFrame or geopandas GeoDataFrame to another format
 
@@ -32,7 +32,7 @@ def to_file(data, path, zip_content=False, remap_shp_fields=True):
     (str): Path to the converted file
     '''
 
-    data = data.copy()
+    data = data[x for x in data.columns if x not in exclude].copy()
 
     filename, fmt = os.path.basename(path).split('.')
     path = os.path.dirname(path)
