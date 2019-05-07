@@ -1,59 +1,122 @@
 import os
-import shutil
-import tempfile
-
-import xmltodict
 
 import pandas as pd
 import geopandas as gpd
+import xmltodict
 
-GEOSPATIAL_FORMATS = ['csv', 'geojson', 'gpkg', 'shp']
-TABULAR_FORMATS = ['csv', 'json', 'xml']
 
-FILE_PREFIX = 'iotrans_'
+_GEO_FMT = ['csv', 'geojson', 'gpkg', 'shp']
+_TAB_FMT = ['csv', 'json', 'xml']
 
-def prune():
-    main = tempfile.gettempdir()
-    for folder in os.listdir(main):
-        if folder.startswith(FILE_PREFIX):
-            shutil.rmtree(os.path.join(main, folder))
+_MULTI_FILE = ['shp']
 
-def to_file(data, fmt_out, filename='data', zip_content=True, remap_shp_fields=True):
-    assert fmt_out in GEOSPATIAL_FORMATS or fmt_out in TABULAR_FORMATS, 'Invalid output formats'
-    assert (fmt_out in TABULAR_FORMATS and isinstance(data, (pd.DataFrame, gpd.GeoDataFrame))) or \
-            (fmt_out in GEOSPATIAL_FORMATS and isinstance(data, gpd.GeoDataFrame)), \
+
+supported_formats = set(_GEO_FMT + _TAB_FMT)
+
+def to_file(data, path, zip_content=True, remap_shp_fields=True):
+    '''
+    Converts pandas DataFrame or geopandas GeoDataFrame to another format
+
+    Parameters:
+    data             (DataFrame or GeoDataFrame): Data content to be converted
+    path              (str)                     : Path to the output file
+    zip_content      (bool)                     : If output file should be zipped
+    remap_shp_fields (bool)                     : If Shapefile field names should be remapped to "FILED_#" structure
+
+    Returns:
+    (str): Path to the converted file
+    '''
+
+    assert fmt in supported_formats, 'Invalid output formats'
+    assert (fmt in _TAB_FMT and isinstance(data, (pd.DataFrame, gpd.GeoDataFrame))) or \
+            (fmt in _GEO_FMT and isinstance(data, gpd.GeoDataFrame)), \
             'Invalid data structure'
 
-    source = tempfile.mkdtemp(prefix=FILE_PREFIX)
-    path = os.path.join(source, '{0}.{1}'.format(filename, fmt_out))
+    path = os.path.dirname(path)
+    filename, fmt = os.path.basename(path).split('.')
 
-    if fmt_out == 'csv':
-        data.to_csv(path, index=False, encoding='utf-8')
-    elif fmt_out == 'json':
-        data.to_json(path, orient='records')
-    elif fmt_out == 'xml':
+    # Create directory if the output format will generate multiple files (eg. Shapefile)
+    if fmt in _MULTI_FILE:
+        path = os.path.join(path, filename) # eg. '/path/output/'
+
+        if os.path.isdir(path):
+            _prune(path)
+
+        os.mkdir(path)
+
+    output = os.path.join(path, '{0}.{1}'.format(filename, fmt))
+
+    if fmt == 'csv':
+        data.to_csv(output, index=False, encoding='utf-8')
+    elif fmt == 'json':
+        data.to_json(output, orient='records')
+    elif fmt == 'xml':
         content = xmltodict.unparse({
             'DATA': {
                 'ROW_{0}'.format(idx): row for idx, row in enumerate(df.to_dict('records'))
             }
         }, pretty=True)
-        with open(path, 'w') as f:
+
+        with open(output, 'w') as f:
             f.write(content)
-    elif fmt_out == 'geojson':
-        data.to_file(path, driver='GeoJSON', encoding='utf-8')
-    elif fmt_out == 'gpkg':
-        data.to_file(path, driver='GPKG')
-    elif fmt_out == 'shp':
+    elif fmt == 'geojson':
+        data.to_file(output, driver='GeoJSON', encoding='utf-8')
+    elif fmt == 'gpkg':
+        data.to_file(output, driver='GPKG')
+    elif fmt == 'shp':
+        # Map the field names to 'FIELD_#' structure to avoid field names being truncated
         if remap_shp_fields and any([len(x) > 10 for x in df.columns]):
             fields = pd.DataFrame([['FIELD_{0}'.format(i+1) if x != 'geometry' else x, x] for i, x in enumerate(df.columns)], columns=['field', 'name'])
-            fields.to_csv(os.path.join(source, 'fields.csv'), index=False, encoding='utf-8')
+
+            # Save the converted field names as a CSV in the same directory
+            fields.to_csv(os.path.join(path, '{0}_fields.csv'.format(filename)), index=False, encoding='utf-8')
 
             df.columns = fields['field']
 
-        df.to_file(path, driver='ESRI Shapefile')
+        df.to_file(output, driver='ESRI Shapefile')
 
     if zip_content:
-        zipped = tempfile.mkdtemp(prefix=FILE_PREFIX)
-        path = shutil.make_archive(os.path.join(zipped, filename), 'zip', root_dir=source, base_dir='.')
+        # Go up a directory level to zip the entire contents of the directory
+        if fmt in _MULTI_FILE:
+            path = os.path.dirname(path)
+            output = os.path.dirname(output)
 
-    return path
+        _zip_file(output, os.path.join(path, '{0}.zip'.format(filename)), clean=True)
+
+    return output
+
+def _prune(path):
+    '''
+    Deletes a file or a directory
+
+    Parameters:
+    path    (str): Path to be removed
+    '''
+
+    if os.path.isdir(path):
+        # Empty the contents of the folder before removing the directory
+        for f in os.listdir(path):
+            os.remove(path)
+
+        os.rmdir(path)
+    else:
+        os.remove(path)
+
+def _zip_file(content, path, clean=False):
+    '''
+    Archives a file or the contents of a directory as a zip
+
+    Parameters:
+    content (str): Input path to the file or directory
+    path    (str): Output path for the zip file
+    '''
+
+    with ZipFile(path, 'w') as f:
+        if os.path.isdir(content):
+            for item in os.listdir(content):
+                f.write(os.path.join(content, item), arcname=item)
+        else:
+            f.write(content)
+
+    if clean:
+        _prune(content)
