@@ -8,7 +8,7 @@ setup(
     version='0.0.1',
     author='Open Data Toronto',
     author_email='opendata@toronto.ca',
-    packages=['iotrans'],
+    packages=[],
     url='https://github.com/open-data-toronto/iotrans',
     license='MIT',
     description='Centralize various format writing tools for structured data',
