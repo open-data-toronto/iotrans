@@ -21,12 +21,6 @@ import iotrans
 
 ### Geospatial data to XML
 
-<<<<<<< HEAD
-    >>> df = gpd.read_file([data_path])
-    >>> iotrans.to_file(df, './data.xml')
-        './data.xml'
-
-=======
 ```python
 df = gpd.read_file([data_path])
 iotrans.to_file(df, './data.xml')
@@ -34,8 +28,7 @@ iotrans.to_file(df, './data.xml')
 ```
 './data.xml'
 ```
-        
->>>>>>> 0a34c0a435bd66a179d641b43baa03de46ca2695
+
 ### Output as a zip file
 
 ```python
