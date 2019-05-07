@@ -50,3 +50,16 @@ iotrans.to_file(df, './data.shp')
 * GeoJSON
 * GeoPackage
 * Shapefile
+
+## Contribution
+All contributions, bug reports, bug fixes, documentation improvements, enhancements and ideas are welcome.
+
+### Reporting issues
+Please report issues [here](https://github.com/open-data-toronto/iotrans/issues).
+
+### Contributing
+Please develop in your own branch and create Pull Requests into the `dev` branch when ready for review and merge.
+
+## License
+
+* [MIT License](https://github.com/open-data-toronto/iotrans/blob/master/LICENSE)
