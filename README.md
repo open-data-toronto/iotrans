@@ -8,6 +8,12 @@ A package to easily convert structured data into various file formats
 * xmltodict>=0.12.0
 
 ## Installation
+Using PIP via PyPI
+
+    pip install iotrans
+
+Manually via GIT
+
     git clone https://github.com/open-data-toronto/iotrans
     cd iotrans
     python setup.py install
