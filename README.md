@@ -13,22 +13,31 @@ Centralize various format writing tools for structured data
     python setup.py install
     
 ## Usage
-.. code:: python
 
-    >>> import geopandas as gpd
-    >>> import iotrans
+```python
+import geopandas as gpd
+import iotrans
+```
 
 ### Geospatial data to XML
 
-    >>> df = gpd.read_file([data_path])
-    >>> iotrans.to_file(df, './data.xml')
-        './data.xml'
+```python
+df = gpd.read_file([data_path])
+iotrans.to_file(df, './data.xml')
+```
+```
+   './data.xml'
+```
         
 ### Output as a zip file
 
-    >>> df = gpd.read_file([data_path])
-    >>> iotrans.to_file(df, './data.shp')
-        './data.zip'
+```python
+df = gpd.read_file([data_path])
+iotrans.to_file(df, './data.shp')
+```
+```
+'./data.zip'
+```
 
 ## Supported Formats
 ### Tabular Formats
