@@ -14,7 +14,6 @@ setup(
     description='Centralize various format writing tools for structured data',
     install_requires=[
         'geopandas>=0.4.0',
-        'pandas>=0.23.4',
         'xmltodict>=0.12.0'
     ],
     include_package_data=False,
