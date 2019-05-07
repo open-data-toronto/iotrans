@@ -1,25 +1,33 @@
-from zipfile import ZipFile
-
 from shapely.geometry import mapping
 
+import json
 import logging
 import os
-import json
 
 import pandas as pd
 import geopandas as gpd
 import xmltodict
 
+import iotrans.utils as utils
 
-_GEO_FMT = ['csv', 'geojson', 'gpkg', 'shp']
-_TAB_FMT = ['csv', 'json', 'xml']
-
-_MULTI_FILE = ['shp']
-
-
-supported_formats = set(_GEO_FMT + _TAB_FMT)
 
 logging.getLogger('fiona._env').setLevel(logging.ERROR)
+
+GEO_FMT = ['csv', 'geojson', 'gpkg', 'shp']
+TAB_FMT = ['csv', 'json', 'xml']
+
+MULTI_FILE = ['shp']
+
+
+def supported_formats():
+    '''
+    Identifies the formats currently supported
+
+    Returns:
+    (set): Formats supported
+    '''
+
+    return set(GEO_FMT + TAB_FMT)
 
 def to_file(data, path, exclude=[], remap_shp_fields=True, zip_content=False,):
     '''
@@ -35,28 +43,28 @@ def to_file(data, path, exclude=[], remap_shp_fields=True, zip_content=False,):
     (str): Path to the converted file
     '''
 
-    data = data[x for x in data.columns if x not in exclude].copy()
+    data = data[[x for x in data.columns if not x in exclude]].copy()
 
     filename, fmt = os.path.basename(path).split('.')
     path = os.path.dirname(path)
 
-    assert fmt in supported_formats, 'Invalid output formats'
-    assert (fmt in _TAB_FMT and isinstance(data, (pd.DataFrame, gpd.GeoDataFrame))) or \
-            (fmt in _GEO_FMT and isinstance(data, gpd.GeoDataFrame)), \
+    assert fmt in supported_formats(), 'Invalid output formats'
+    assert (fmt in TAB_FMT and isinstance(data, (pd.DataFrame, gpd.GeoDataFrame))) or \
+            (fmt in GEO_FMT and isinstance(data, gpd.GeoDataFrame)), \
             'Invalid data structure'
 
     # Create directory if the output format will generate multiple files (eg. Shapefile)
-    if fmt in _MULTI_FILE:
+    if fmt in MULTI_FILE:
         path = os.path.join(path, filename) # eg. '/path/output/'
 
         if os.path.isdir(path):
-            _prune(path)
+            utils.prune(path)
 
         os.mkdir(path)
 
     output = os.path.join(path, '{0}.{1}'.format(filename, fmt))
 
-    if fmt in _TAB_FMT:
+    if fmt in TAB_FMT:
         data['geometry'] = data['geometry'].apply(lambda x: mapping(x))
 
     if fmt == 'csv':
@@ -93,51 +101,10 @@ def to_file(data, path, exclude=[], remap_shp_fields=True, zip_content=False,):
 
     if zip_content:
         # Go up a directory level to zip the entire contents of the directory
-        if fmt in _MULTI_FILE:
+        if fmt in MULTI_FILE:
             path = os.path.dirname(path)
             output = os.path.dirname(output)
 
-        output = _zip_file(output, os.path.join(path, '{0}.zip'.format(filename)))
+        output = utils.zip_file(output, os.path.join(path, '{0}.zip'.format(filename)))
 
     return output
-
-def _prune(path):
-    '''
-    Deletes a file or a directory
-
-    Parameters:
-    path    (str): Path to be removed
-    '''
-
-    if os.path.isdir(path):
-        # Empty the contents of the folder before removing the directory
-        for f in os.listdir(path):
-            os.remove(os.path.join(path, f))
-
-        os.rmdir(path)
-    else:
-        os.remove(path)
-
-def _zip_file(content, path, clean=True):
-    '''
-    Archives a file or the contents of a directory as a zip
-
-    Parameters:
-    content (str): Input path to the file or directory
-    path    (str): Output path for the zip file
-
-    Returns:
-    (str): Path to the zipped file
-    '''
-
-    with ZipFile(path, 'w') as f:
-        if os.path.isdir(content):
-            for item in os.listdir(content):
-                f.write(os.path.join(content, item), arcname=item)
-        else:
-            f.write(content)
-
-    if clean:
-        _prune(content)
-
-    return path
