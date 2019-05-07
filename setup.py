@@ -1,17 +1,18 @@
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup
+from setuptools import setup
+
+with open('README.md', 'r') as f:
+    long_description = f.read()
 
 setup(
     name='iotrans',
     version='0.0.1',
     author='Open Data Toronto',
     author_email='opendata@toronto.ca',
-    packages=[],
+    packages=['iotrans'],
     url='https://github.com/open-data-toronto/iotrans',
     license='MIT',
-    description='Centralize various format writing tools for structured data',
+    description='A package to easily convert structured data into various file formats',
+    long_description=long_description,
     install_requires=[
         'geopandas>=0.4.0',
         'xmltodict>=0.12.0'

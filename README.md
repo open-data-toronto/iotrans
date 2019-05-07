@@ -1,6 +1,6 @@
 # iotrans
 
-Centralize various format writing tools for structured data
+A package to easily convert structured data into various file formats
 
 ## Requirements
 * Python 3.6
@@ -11,7 +11,7 @@ Centralize various format writing tools for structured data
     git clone https://github.com/open-data-toronto/iotrans
     cd iotrans
     python setup.py install
-    
+
 ## Usage
 .. code:: python
 
@@ -23,7 +23,7 @@ Centralize various format writing tools for structured data
     >>> df = gpd.read_file([data_path])
     >>> iotrans.to_file(df, './data.xml')
         './data.xml'
-        
+
 ### Output as a zip file
 
     >>> df = gpd.read_file([data_path])
