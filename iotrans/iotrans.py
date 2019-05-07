@@ -2,6 +2,7 @@ from zipfile import ZipFile
 
 from shapely.geometry import mapping
 
+import logging
 import os
 import json
 
@@ -17,6 +18,8 @@ _MULTI_FILE = ['shp']
 
 
 supported_formats = set(_GEO_FMT + _TAB_FMT)
+
+logging.getLogger('fiona._env').setLevel(logging.ERROR)
 
 def to_file(data, path, exclude=[], remap_shp_fields=True, zip_content=False,):
     '''
