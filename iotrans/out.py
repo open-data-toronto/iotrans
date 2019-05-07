@@ -4,8 +4,8 @@ import json
 import logging
 import os
 
-import pandas as pd
 import geopandas as gpd
+import pandas as pd
 import xmltodict
 
 import iotrans.utils as utils
@@ -48,6 +48,8 @@ def to_file(data, path, exclude=[], remap_shp_fields=True, zip_content=False,):
     filename, fmt = os.path.basename(path).split('.')
     path = os.path.dirname(path)
 
+    fmt = fmt.lower()
+
     assert fmt in supported_formats(), 'Invalid output formats'
     assert (fmt in TAB_FMT and isinstance(data, (pd.DataFrame, gpd.GeoDataFrame))) or \
             (fmt in GEO_FMT and isinstance(data, gpd.GeoDataFrame)), \
@@ -64,20 +66,20 @@ def to_file(data, path, exclude=[], remap_shp_fields=True, zip_content=False,):
 
     output = os.path.join(path, '{0}.{1}'.format(filename, fmt))
 
-    if fmt in TAB_FMT:
+    if fmt in TAB_FMT and 'geometry' in data.columns:
         data['geometry'] = data['geometry'].apply(lambda x: mapping(x))
 
     if fmt == 'csv':
         data.to_csv(output, index=False, encoding='utf-8')
     elif fmt == 'json':
-        content = data.to_dict(orient='records')
+        content = data.replace({pd.np.nan: None}).to_dict(orient='records')
 
         with open(output, 'w') as f:
             f.write(json.dumps(content))
     elif fmt == 'xml':
         content = xmltodict.unparse({
             'DATA': {
-                'ROW id="{0}"'.format(idx): row for idx, row in enumerate(data.to_dict('records'))
+                'ROW_{0}'.format(idx): row for idx, row in enumerate(data.to_dict('records'))
             }
         }, pretty=True)
 
