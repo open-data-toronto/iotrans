@@ -1,6 +1,9 @@
 from zipfile import ZipFile
 
+from shapely.geometry import mapping
+
 import os
+import json
 
 import pandas as pd
 import geopandas as gpd
@@ -29,6 +32,8 @@ def to_file(data, path, zip_content=False, remap_shp_fields=True):
     (str): Path to the converted file
     '''
 
+    data = data.copy()
+
     filename, fmt = os.path.basename(path).split('.')
     path = os.path.dirname(path)
 
@@ -48,14 +53,20 @@ def to_file(data, path, zip_content=False, remap_shp_fields=True):
 
     output = os.path.join(path, '{0}.{1}'.format(filename, fmt))
 
+    if fmt in _TAB_FMT:
+        data['geometry'] = data['geometry'].apply(lambda x: mapping(x))
+
     if fmt == 'csv':
         data.to_csv(output, index=False, encoding='utf-8')
     elif fmt == 'json':
-        data.to_json(output, orient='records')
+        content = data.to_dict(orient='records')
+
+        with open(output, 'w') as f:
+            f.write(json.dumps(content))
     elif fmt == 'xml':
         content = xmltodict.unparse({
             'DATA': {
-                'ROW': row for i, row in enumerate(data.to_dict('records'))
+                'ROW id="{0}"'.format(idx): row for idx, row in enumerate(data.to_dict('records'))
             }
         }, pretty=True)
 
