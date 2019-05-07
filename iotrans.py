@@ -55,7 +55,7 @@ def to_file(data, path, zip_content=True, remap_shp_fields=True):
     elif fmt == 'xml':
         content = xmltodict.unparse({
             'DATA': {
-                'ROW_{0}'.format(idx): row for idx, row in enumerate(df.to_dict('records'))
+                'ROW_{0}'.format(idx): row for idx, row in enumerate(data.to_dict('records'))
             }
         }, pretty=True)
 
@@ -67,15 +67,15 @@ def to_file(data, path, zip_content=True, remap_shp_fields=True):
         data.to_file(output, driver='GPKG')
     elif fmt == 'shp':
         # Map the field names to 'FIELD_#' structure to avoid field names being truncated
-        if remap_shp_fields and any([len(x) > 10 for x in df.columns]):
-            fields = pd.DataFrame([['FIELD_{0}'.format(i+1) if x != 'geometry' else x, x] for i, x in enumerate(df.columns)], columns=['field', 'name'])
+        if remap_shp_fields and any([len(x) > 10 for x in data.columns]):
+            fields = pd.DataFrame([['FIELD_{0}'.format(i+1) if x != 'geometry' else x, x] for i, x in enumerate(data.columns)], columns=['field', 'name'])
 
             # Save the converted field names as a CSV in the same directory
             fields.to_csv(os.path.join(path, '{0}_fields.csv'.format(filename)), index=False, encoding='utf-8')
 
-            df.columns = fields['field']
+            data.columns = fields['field']
 
-        df.to_file(output, driver='ESRI Shapefile')
+        data.to_file(output, driver='ESRI Shapefile')
 
     if zip_content:
         # Go up a directory level to zip the entire contents of the directory
@@ -98,7 +98,7 @@ def _prune(path):
     if os.path.isdir(path):
         # Empty the contents of the folder before removing the directory
         for f in os.listdir(path):
-            os.remove(path)
+            os.remove(os.path.join(path, f))
 
         os.rmdir(path)
     else:
