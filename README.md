@@ -3,7 +3,6 @@ iotrans
 
 Centralize various format writing tools for structured data
 
-------------
 Supported Formats
 ------------
 Tabular Formats
@@ -17,7 +16,6 @@ Geospatial Formats
 * GeoPackage
 * Shapefile
 
-------------
 Requirements
 ------------
 * geopandas>=0.4.0
