@@ -13,22 +13,38 @@ A package to easily convert structured data into various file formats
     python setup.py install
 
 ## Usage
-.. code:: python
 
-    >>> import geopandas as gpd
-    >>> import iotrans
+```python
+import geopandas as gpd
+import iotrans
+```
 
 ### Geospatial data to XML
 
+<<<<<<< HEAD
     >>> df = gpd.read_file([data_path])
     >>> iotrans.to_file(df, './data.xml')
         './data.xml'
 
+=======
+```python
+df = gpd.read_file([data_path])
+iotrans.to_file(df, './data.xml')
+```
+```
+'./data.xml'
+```
+        
+>>>>>>> 0a34c0a435bd66a179d641b43baa03de46ca2695
 ### Output as a zip file
 
-    >>> df = gpd.read_file([data_path])
-    >>> iotrans.to_file(df, './data.shp')
-        './data.zip'
+```python
+df = gpd.read_file([data_path])
+iotrans.to_file(df, './data.shp')
+```
+```
+'./data.zip'
+```
 
 ## Supported Formats
 ### Tabular Formats
@@ -41,3 +57,16 @@ A package to easily convert structured data into various file formats
 * GeoJSON
 * GeoPackage
 * Shapefile
+
+## Contribution
+All contributions, bug reports, bug fixes, documentation improvements, enhancements and ideas are welcome.
+
+### Reporting issues
+Please report issues [here](https://github.com/open-data-toronto/iotrans/issues).
+
+### Contributing
+Please develop in your own branch and create Pull Requests into the `dev` branch when ready for review and merge.
+
+## License
+
+* [MIT License](https://github.com/open-data-toronto/iotrans/blob/master/LICENSE)
