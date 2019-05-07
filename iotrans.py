@@ -15,7 +15,7 @@ _MULTI_FILE = ['shp']
 
 supported_formats = set(_GEO_FMT + _TAB_FMT)
 
-def to_file(data, path, zip_content=True, remap_shp_fields=True):
+def to_file(data, path, zip_content=False, remap_shp_fields=True):
     '''
     Converts pandas DataFrame or geopandas GeoDataFrame to another format
 
@@ -55,7 +55,7 @@ def to_file(data, path, zip_content=True, remap_shp_fields=True):
     elif fmt == 'xml':
         content = xmltodict.unparse({
             'DATA': {
-                'ROW_{0}'.format(idx): row for idx, row in enumerate(data.to_dict('records'))
+                'ROW': row for i, row in enumerate(data.to_dict('records'))
             }
         }, pretty=True)
 
@@ -83,7 +83,7 @@ def to_file(data, path, zip_content=True, remap_shp_fields=True):
             path = os.path.dirname(path)
             output = os.path.dirname(output)
 
-        _zip_file(output, os.path.join(path, '{0}.zip'.format(filename)), clean=True)
+        output = _zip_file(output, os.path.join(path, '{0}.zip'.format(filename)))
 
     return output
 
@@ -104,13 +104,16 @@ def _prune(path):
     else:
         os.remove(path)
 
-def _zip_file(content, path, clean=False):
+def _zip_file(content, path, clean=True):
     '''
     Archives a file or the contents of a directory as a zip
 
     Parameters:
     content (str): Input path to the file or directory
     path    (str): Output path for the zip file
+
+    Returns:
+    (str): Path to the zipped file
     '''
 
     with ZipFile(path, 'w') as f:
@@ -122,3 +125,5 @@ def _zip_file(content, path, clean=False):
 
     if clean:
         _prune(content)
+
+    return path
