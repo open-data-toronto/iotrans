@@ -35,7 +35,7 @@ def to_file(data, path, exclude=[], remap_shp_fields=True, zip_content=False,):
 
     Parameters:
     data             (DataFrame or GeoDataFrame): Data content to be converted
-    path              (str)                     : Path to the output file
+    path             (str)                      : Path to the output file
     zip_content      (bool)                     : If output file should be zipped
     remap_shp_fields (bool)                     : If Shapefile field names should be remapped to "FILED_#" structure
 
