@@ -74,6 +74,8 @@ def to_file(data, path, exclude=[], projection=None, remap_shp_fields=True, zip_
     output = os.path.join(path, '{0}.{1}'.format(filename, fmt))
 
     if fmt in GEO_FMT:
+        if any([x.startswith('Multi') for x in data['geometry'].apply(lambda x: x.geom_type)]):
+            data['geometry'] = data['geometry'].apply(lambda x: GEOM_TYPE_MAP[x.geom_type]([x]) if not x.geom_type.startswith('Multi') else x)
 
         if projection is not None:
             data = data.to_crs({ 'init': 'epsg:{0}'.format(projection) })
