@@ -1,4 +1,4 @@
-from shapely.geometry import mapping
+from shapely.geometry import mapping, MultiPolygon, MultiPoint, MultiLineString
 
 import json
 import logging
@@ -18,6 +18,12 @@ TAB_FMT = ['csv', 'json', 'xml']
 
 MULTI_FILE = ['shp']
 
+GEOM_TYPE_MAP = {
+    'Polygon': MultiPolygon,
+    'LineString': MultiLineString,
+    'Point': MultiPoint
+}
+
 
 def supported_formats():
     '''
@@ -29,15 +35,16 @@ def supported_formats():
 
     return set(GEO_FMT + TAB_FMT)
 
-def to_file(data, path, exclude=[], remap_shp_fields=True, zip_content=False,):
+def to_file(data, path, exclude=[], projection=None, remap_shp_fields=True, zip_content=False,):
     '''
     Converts pandas DataFrame or geopandas GeoDataFrame to another format
 
     Parameters:
     data             (DataFrame or GeoDataFrame): Data content to be converted
     path             (str)                      : Path to the output file
-    zip_content      (bool)                     : If output file should be zipped
+    projection       (str)                      : EPSG code for the projection
     remap_shp_fields (bool)                     : If Shapefile field names should be remapped to "FILED_#" structure
+    zip_content      (bool)                     : If output file should be zipped
 
     Returns:
     (str): Path to the converted file
@@ -65,6 +72,11 @@ def to_file(data, path, exclude=[], remap_shp_fields=True, zip_content=False,):
         os.mkdir(path)
 
     output = os.path.join(path, '{0}.{1}'.format(filename, fmt))
+
+    if fmt in GEO_FMT:
+
+        if projection is not None:
+            data = data.to_crs({ 'init': 'epsg:{0}'.format(projection) })
 
     if fmt in TAB_FMT and 'geometry' in data.columns:
         data['geometry'] = data['geometry'].apply(lambda x: mapping(x))
