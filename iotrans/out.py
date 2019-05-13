@@ -1,7 +1,6 @@
 from shapely.geometry import mapping, MultiPolygon, MultiPoint, MultiLineString
 
 import json
-# import logging
 import os
 
 import geopandas as gpd
@@ -10,9 +9,6 @@ import xmltodict
 
 import iotrans.utils as utils
 
-
-# logging.getLogger('fiona._env').setLevel(logging.ERROR)
-# logging.getLogger('fiona.ogrext').setLevel(logging.ERROR)
 
 GEO_FMT = ['csv', 'geojson', 'gpkg', 'shp']
 TAB_FMT = ['csv', 'json', 'xml']
