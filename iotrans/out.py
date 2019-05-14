@@ -88,14 +88,21 @@ def to_file(data, path, exclude=[], projection=None, remap_shp_fields=True, zip_
         with open(output, 'w') as f:
             f.write(json.dumps(content))
     elif fmt == 'xml':
-        content = xmltodict.unparse({
-            'DATA': {
-                'ROW_{0}'.format(idx): row for idx, row in enumerate(data.to_dict('records'))
-            }
-        }, pretty=True)
+        data.index.name = '@number'
+        data = data.reset_index()
+
+        content = []
+        for i, r in enumerate(data.to_dict('records')):
+            content.append(
+                xmltodict.unparse(
+                    { 'ROW': r },
+                    full_document=(i==0),
+                    pretty=True
+                )
+            )
 
         with open(output, 'w') as f:
-            f.write(content)
+            f.write('\n'.join(content))
     elif fmt == 'geojson':
         data.to_file(output, driver='GeoJSON', encoding='utf-8')
     elif fmt == 'gpkg':
