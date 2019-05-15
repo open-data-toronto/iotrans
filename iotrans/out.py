@@ -70,7 +70,7 @@ def to_file(data, path, exclude=[], projection=None, remap_shp_fields=True, zip_
 
     output = os.path.join(path, '{0}.{1}'.format(filename, fmt))
 
-    if fmt in GEO_FMT:
+    if fmt in GEO_FMT and 'geometry' in data.columns:
         if any([x.startswith('Multi') for x in data['geometry'].apply(lambda x: x.geom_type)]):
             data['geometry'] = data['geometry'].apply(lambda x: GEOM_TYPE_MAP[x.geom_type]([x]) if not x.geom_type.startswith('Multi') else x)
 
@@ -88,21 +88,20 @@ def to_file(data, path, exclude=[], projection=None, remap_shp_fields=True, zip_
         with open(output, 'w') as f:
             f.write(json.dumps(content))
     elif fmt == 'xml':
-        data.index.name = '@number'
+        data.index.name = '@count'
         data = data.reset_index()
 
         content = []
-        for i, r in enumerate(data.to_dict('records')):
+        for r in data.head(10).to_dict('records'):
             content.append(
                 xmltodict.unparse(
                     { 'ROW': r },
-                    full_document=(i==0),
-                    pretty=True
+                    full_document=False,
                 )
             )
 
         with open(output, 'w') as f:
-            f.write('\n'.join(content))
+            f.write('<?xml version="1.0" encoding="utf-8"?><DATA>{0}</DATA>'.format(''.join(content)))
     elif fmt == 'geojson':
         data.to_file(output, driver='GeoJSON', encoding='utf-8')
     elif fmt == 'gpkg':
