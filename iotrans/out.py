@@ -92,7 +92,7 @@ def to_file(data, path, exclude=[], projection=None, remap_shp_fields=True, zip_
         data = data.reset_index()
 
         content = []
-        for r in data.head(10).to_dict('records'):
+        for r in data.replace({pd.np.nan: None}).to_dict('records'):
             content.append(
                 xmltodict.unparse(
                     { 'ROW': r },
