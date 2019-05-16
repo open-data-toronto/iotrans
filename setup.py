@@ -5,7 +5,7 @@ with open('README.md', 'r') as f:
 
 setup(
     name='iotrans',
-    version='0.0.3',
+    version='0.0.4',
     author='Open Data Toronto',
     author_email='opendata@toronto.ca',
     packages=['iotrans'],
